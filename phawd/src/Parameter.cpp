@@ -277,7 +277,8 @@ void ParameterCollection::addParameter(Parameter* param) {
     std::string name = param->getName();
     if (mapContains(m_map, name)) {
         printf("[ERROR] ParameterCollection %s: tried to add parameter %s twice!\n", m_name.c_str(), name.c_str());
-        throw std::runtime_error(" parameter error [" + m_name + "]: parameter " + name + " appears twice!");
+        //throw std::runtime_error(" parameter error [" + m_name + "]: parameter " + name + " appears twice!");
+        return;
     }
     m_map[name] = param;
 }
