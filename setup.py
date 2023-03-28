@@ -130,7 +130,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as fp:
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
     name="phawd",
-    version="0.2",
+    version="0.3",
     author="HuNing-He",
     author_email="957278968@qq.com",
     description="python binding for phawd",
