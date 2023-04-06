@@ -54,7 +54,7 @@ cibuildwheel --platform linux
 ```shell
 cd wheelhouse
 # this depends on your system and python version
-pip install phawd-0.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+pip install phawd-0.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 ```
 
 ## 3 SharedMemory example
@@ -65,7 +65,7 @@ pip install phawd-0.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 
 ```yaml
 RobotName: shm_demo
-Type: Shared Memory
+Type: SharedMemory
 WaveParamNum: 3
 DOUBLE:
   p_d: 3.14159
