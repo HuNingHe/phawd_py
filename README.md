@@ -75,7 +75,7 @@ VEC3_DOUBLE:
   p_vec3d: [1, 2, 3]
 ```
 
-&emsp;&emsp;Read this file using phawd, and click ready button. Then run the code demo as below.
+&emsp;&emsp;Read this file using phawd, and click OK button. Then run the code demo as below.
 
 ### 3.2 code demo
 
@@ -139,7 +139,7 @@ VEC3_DOUBLE:
   p_vec3d: [1, 2, 3]
 ```
 
-&emsp;&emsp;Read this file using phawd, and click ready button. Then run the code demo as below.
+&emsp;&emsp;Read this file using phawd, and click OK button. Then run the code demo as below.
 
 ### 4.2 code demo
 
