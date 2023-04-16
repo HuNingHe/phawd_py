@@ -11,13 +11,12 @@
 
 #include <fcntl.h>
 #include <fstream>
+#include <sys/stat.h>
 #include "SharedMemory.h"
 #include "SharedParameter.h"
 #if __linux__
 #include <sys/mman.h>
-#include <sys/stat.h>
-#include "fcntl.h"
-#include "unistd.h"
+#include <unistd.h>
 #endif
 
 using namespace phawd;
