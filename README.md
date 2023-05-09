@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
 ### 4.1 Prerequisites in phawd
 
-&emsp;&emsp;phawd's yaml file is as follows:
+&emsp;&emsp;Running on the computer where PHAWD is located, so it uses the local IP address 127.0.0.1. Users can run it on other (Ubuntu/Windows) devices.phawd's yaml file is as follows:
 
 ```yaml
 RobotName: 5230
