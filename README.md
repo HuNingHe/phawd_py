@@ -64,15 +64,15 @@ pip install phawd-0.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 &emsp;&emsp;phawd's yaml file is as follows:
 
 ```yaml
-RobotName: shm_demo
-Type: SharedMemory
-WaveParamNum: 3
-DOUBLE:
-  p_d: 3.14159
-S64:
-  p_s64: 31
-VEC3_DOUBLE:
-  p_vec3d: [1, 2, 3]
+  RobotName: demo
+  Type: SharedMemory
+  WaveParamNum: 3
+  DOUBLE:
+    pd: [2]
+  S64:
+    ps64: [123]
+  VEC3_DOUBLE:
+    pvec3d: [1, 2, 3]
 ```
 
 &emsp;&emsp;Read this file using phawd, and click OK button. Then run the code demo as below.
@@ -84,42 +84,54 @@ VEC3_DOUBLE:
 ```python
 # robot controller
 from phawd import SharedMemory, SharedParameters, ParameterCollection, Parameter
+
 if __name__ == '__main__':
-    num_ctr_params = 3
-    num_wave_params = 3
-    shm_size = SharedParameters.__sizeof__() + (num_ctr_params + num_wave_params) * Parameter.__sizeof__()
+    p0 = Parameter("pw_d", 12.13)
+    p1 = Parameter("pw_s64", 1213)
+    p2 = Parameter("pw_vec3d", [-1.4, 2, 3])
+
     shm = SharedMemory()
-    shm.attach(name="shm_demo", size=shm_size)
-    sp = shm.get()
-    params = sp.getParameters()
-
-    print('numControlParams: {}'.format(sp.numControlParams))
-    print('numWaveParams: {}'.format(sp.numWaveParams))
-    print('p_d name: {}; ValueKind: {}; Value: {}'.format(params[0].getName(), params[0].getValueKind(), params[0].getDouble()))
-    print('p_s64 name: {}; ValueKind: {}; Value: {}'.format(params[1].getName(), params[1].getValueKind(), params[1].getS64()))
-    print('p_vec3d name: {}; ValueKind: {}; Value: {}'.format(params[2].getName(), params[2].getValueKind(), params[2].getVec3d()))
-
-    pw0 = Parameter("pw0", 5)
-    pw1 = Parameter("pw1", 3.14)
-    pw2 = Parameter("pw2", [1, 2, 3])
-
-    sp.setParameters([pw0, pw1, pw2])
-    sp.connected += 1  # This is important, otherwise phawd will not be able to detect the writing of data
-
-    # If you have a lot of parameters, and it is inconvenient to process by index, you may wish to try ParameterCollection
     pc = ParameterCollection()
+
+    p_size = Parameter.__sizeof__()
+    sp_size = SharedParameters.__sizeof__()
+    num_control_params = 3
+    num_wave_params = 3
+    shm_size = sp_size + (num_control_params + num_wave_params) * p_size
+
+    shm.attach("demo", shm_size)
+    sp = shm.get()
+    sp.setParameters([p0, p1, p2])
+    sp.connected += 1
+    ctr_params = sp.getParameters()
     sp.collectParameters(pc)
 
-    print("p_d value in ParameterCollection: {}".format(pc.lookup("p_d").getDouble()))
-    print("p_s64 value in ParameterCollection: {}".format(pc.lookup("p_s64").getS64()))
-    print("p_vec3d value in ParameterCollection: {}".format(pc.lookup("p_vec3d").getVec3d()))
-    sp.connected -= 1  # suggest to do this
+    run_iter = 0
+
+    while run_iter < 500000:
+        run_iter += 1
+        p0.setValue(pc.lookup("pd").getDouble())
+        p1.setValue(pc.lookup("ps64").getS64())
+        p2.setValue(pc.lookup("pvec3d").getVec3d())
+        sp.setParameters([p0, p1, p2])
+
+        if run_iter % 20 == 0:
+            print(pc.lookup("ps64").getName(), ":")
+            print(pc.lookup("ps64").getS64())
+            print(pc.lookup("pd").getName(), ":")
+            print(pc.lookup("pd").getDouble())
+            print(pc.lookup("pvec3d").getName(), ":")
+            print(pc.lookup("pvec3d").getVec3d())
+
+    sp.connected -= 1
 ```
 
 ### 3.3 Result
 
 - Print control parameter informations at console
-- You can select curves to add in phawd
+- You can select all 3 curves to add in phawd
+- Modify any parameter value in the phawd parameter setting interface,
+- and the corresponding curve will change to the value you set
 
 ## 4 Socket example
 
@@ -132,11 +144,11 @@ RobotName: 5230
 Type: Socket
 WaveParamNum: 3
 DOUBLE:
-  p_d: 3.14159
+  pd: [2]
 S64:
-  p_s64: 31
+  ps64: [123]
 VEC3_DOUBLE:
-  p_vec3d: [1, 2, 3]
+  pvec3d: [1, 2, 3]
 ```
 
 &emsp;&emsp;Read this file using phawd, and click OK button. Then run the code demo as below.
@@ -150,40 +162,55 @@ VEC3_DOUBLE:
 from phawd import SocketToPhawd, SocketFromPhawd, SocketConnect, Parameter
 
 if __name__ == '__main__':
-    num_ctr_params = 3
-    num_wave_params = 3
-    send_size = Parameter.__sizeof__() * num_wave_params + SocketToPhawd.__sizeof__()
-    read_size = Parameter.__sizeof__() * num_ctr_params + SocketFromPhawd.__sizeof__()
-    sc = SocketConnect()
-    sc.init(send_size, read_size, False)
-    ret = sc.connectToServer("127.0.0.1", 5230, 30)
-    iter_c = 0
+    p0 = Parameter("pw_d", 1.213)
+    p1 = Parameter("pw_s64", 12)
+    p2 = Parameter("pw_vec3d", [-1.4, 2, 3])
 
-    pw0 = Parameter("pw0", 5)
-    pw1 = Parameter("pw1", 3.14)
-    pw2 = Parameter("pw2", [1, 2, 3])
+    send_params_num = 3
+    read_params_num = 3
+    send_size = SocketToPhawd.__sizeof__() + send_params_num * Parameter.__sizeof__()
+    read_size = SocketFromPhawd.__sizeof__() + read_params_num * Parameter.__sizeof__()
 
-    while iter_c < 500000:
-        iter_c += 1
-        socket_to_phawd = sc.getSend()
-        socket_to_phawd.numWaveParams = 3
-        socket_to_phawd.parameters = [pw0, pw1, pw2]
-        sc.send()
-        ret = sc.read()
+    client = SocketConnect()
+
+    client.init(send_size, read_size)
+    client.connectToServer("127.0.0.1", 5230)
+    run_iter = 0
+
+    socket_to_phawd = client.getSend()
+    socket_to_phawd.numWaveParams = 3
+    socket_to_phawd.parameters = [p0, p1, p2]
+
+    while run_iter < 5000000:
+        run_iter += 1
+        socket_to_phawd = client.getSend()
+
+        ret = client.read()
 
         if ret > 0:
-            socket_from_phawd = sc.getRead()
-            ctrl_params = socket_from_phawd.parameters
-            print("numControlParams: {}".format(socket_from_phawd.numControlParams))
-            print('p_d name: {}; ValueKind: {}; Value: {}'.format(ctrl_params[0].getName(), ctrl_params[0].getValueKind(), ctrl_params[0].getDouble()))
-            print('p_s64 name: {}; ValueKind: {}; Value: {}'.format(ctrl_params[1].getName(), ctrl_params[1].getValueKind(), ctrl_params[1].getS64()))
-            print('p_vec3d name: {}; ValueKind: {}; Value: {}'.format(ctrl_params[2].getName(), ctrl_params[2].getValueKind(), ctrl_params[2].getVec3d()))
+            socket_from_phawd = client.getRead()
+
+            p0.setValue(socket_from_phawd.parameters[0].getDouble())
+            p1.setValue(socket_from_phawd.parameters[1].getS64())
+            p2.setValue(socket_from_phawd.parameters[2].getVec3d())
+            socket_to_phawd.parameters = [p0, p1, p2]
+            client.send()
+
+            if run_iter % 20 == 0:
+                print(socket_from_phawd.parameters[0].getName(), ":")
+                print(socket_from_phawd.parameters[0].getDouble())
+                print(socket_from_phawd.parameters[1].getName(), ":")
+                print(socket_from_phawd.parameters[1].getS64())
+                print(socket_from_phawd.parameters[2].getName(), ":")
+                print(socket_from_phawd.parameters[2].getVec3d())
 ```
 
 ### 4.3 Result
 
 - Once you modify the parameter in phawd software, this program will print parameter informations at console
-- You can select curves to add in phawd
+- You can select all 3 curves to add in phawd
+- Modify any parameter value in the phawd parameter setting interface,
+- and the corresponding curve will change to the value you set
 
 ## 5 Notation
 
