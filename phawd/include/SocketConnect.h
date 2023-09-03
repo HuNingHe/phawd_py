@@ -21,6 +21,7 @@
 #endif
 
 #pragma once
+#include <string>
 namespace phawd {
 /*!
  * This class is used for socket communication.
